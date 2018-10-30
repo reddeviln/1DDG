@@ -1,0 +1,5 @@
+project(1DDG)
+cmake_minimum_required(VERSION 3.10)
+enable_language(Fortran)
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS_DEBUG} -fbounds-check -ffpe-trap=invalid,denormal,zero -fbacktrace")
+add_subdirectory(src)
