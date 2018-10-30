@@ -29,7 +29,6 @@ CONTAINS
     this%QL       = 0.0_RP
     this%FstarR   = 0.0_RP
     this%FstarL   = 0.0_RP
-    this%G        = 0.0_RP
     this%Q        = 0.0_RP
     this%Q_dot    = 0.0_RP
     
@@ -96,7 +95,7 @@ CONTAINS
     IMPLICIT NONE
     TYPE(DGElement),INTENT(INOUT) :: this
 
-    this%nEqn     = NONE
+    this%nEqn     = 0
     this%xL       = 0.0_RP
     this%xR       = 0.0_RP
     this%delta_x  = 0.0_RP

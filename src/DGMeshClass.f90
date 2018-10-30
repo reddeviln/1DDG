@@ -57,7 +57,7 @@ CONTAINS
 
     !Riemannproblem
 
-    DO j = this%K
+    DO j = 1,this%K
        idL = this%p(j)%eLeft
        idR = this%p(j)%eRight
        !CALL RiemannSolver(this%e(idL)%QR,this%e(idR)%QL,F,this%e(idR)%nEqn)
@@ -82,7 +82,7 @@ CONTAINS
     INTEGER :: i
 
     DO i = 1,this%K
-       CALL DestructDGElement(this%e(i))
+       CALL DestructElement(this%e(i))
     END DO
     CALL DestructNodalDGStorage(this%DG)
     DEALLOCATE(this%e,this%p)
