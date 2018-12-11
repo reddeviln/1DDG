@@ -5,7 +5,7 @@ PROGRAM Driver
   REAL(KIND=RP) :: xmin=-1.0_RP,xmax=1.0_RP,ymin=-1.0_RP,ymax=1.0_RP&
        &,zmin=-1.0_RP,zmax=1.0_RP
   TYPE(DGMesh)  :: Simulation
-  INTEGER,PARAMETER       :: NQ=8,N=3,nEqn=5
+  INTEGER,PARAMETER       :: NQ=8,N=3,nEqn=3
   INTEGER       :: i,m=0,j=0
   CHARACTER(len=3) :: numChar
   CHARACTER(len=24) :: fname ='../Plots/Movies/UXXX.tec'
