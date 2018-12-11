@@ -1,5 +1,6 @@
 MODULE DGElementClass
   USE NodalDGStorageClass
+  USE FluxRoutines
   IMPLICIT NONE
 
   TYPE DGElement
