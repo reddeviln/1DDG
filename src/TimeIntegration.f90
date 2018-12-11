@@ -64,7 +64,7 @@ CONTAINS
        Qplot((i-1)*this%DG%N:i*this%DG%N)=this%e(i)%Q(:,1)
        pplot((i-1)*this%DG%N:i*this%DG%N)=points(i,:)
     END DO
-    OPEN(file='../Plots/initial.curve', unit=15)
+    OPEN(file='../Plots/initial.dat', unit=15)
     CALL ExportToTecplot_1D(pplot,qplot,this%DG%N,15,"rho")
     CLOSE(15)
   END SUBROUTINE InitialCondition
