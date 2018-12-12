@@ -4,7 +4,7 @@ MODULE DGElementClass
   IMPLICIT NONE
 
   TYPE DGElement
-     REAL(KIND=RP)                             :: delta_x,xL,xR
+     REAL(KIND=RP)                             :: delta_x,xL,xR,lambdamax
      INTEGER                                   :: nEqn
      REAL(KIND=RP),ALLOCATABLE, DIMENSION(:)   :: QR,QL,FstarR,FstarL
      REAL(KIND=RP),ALLOCATABLE, DIMENSION(:,:) :: Q,Q_dot
@@ -48,7 +48,7 @@ CONTAINS
     N    = DG%N
     nEqn = this%nEqn
     DO j = 0,N
-       !CALL Flux(this%Q(j,:),F(j,:),nEqn)
+       CALL EulerAnalyticFlux(this%Q,F,N,nEqn)
     END DO
 
     CALL SystemDGDerivative(this%FstarR,this%FstarL,F,F_prime,DG&
@@ -76,7 +76,7 @@ CONTAINS
     
     !calculate volume terms
     DO i = 1,nEqn
-       !CALL CalculateVolume(Fprime(:,i),F(:,i),Dhat,N)
+       CALL CalculateVolume(Fprime(:,i),F(:,i),D_hat,N)
     END DO
 
     !Surface terms

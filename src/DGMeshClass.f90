@@ -11,6 +11,7 @@ MODULE DGMeshClass
      TYPE(NodalDGStorage)                        :: DG
      TYPE(DGElement)   ,ALLOCATABLE,DIMENSION(:) :: e
      TYPE(NodePointers),ALLOCATABLE,DIMENSION(:) :: p
+     REAL(KIND=RP)                               :: lambdamax
   END type DGMesh
 
 CONTAINS
@@ -54,13 +55,18 @@ CONTAINS
     nEqn = this%e(1)%nEqn
     
     !boundaryconditions here if needed
-
+    DO i=1,this%K
+       this%e(i)%QL=this%e(i)%Q(0,:)
+       this%e(i)%QR=this%e(i)%Q(N,:)
+    END DO
+    
     !Riemannproblem
-
+    
     DO j = 1,this%K
        idL = this%p(j)%eLeft
        idR = this%p(j)%eRight
-       !CALL RiemannSolver(this%e(idL)%QR,this%e(idR)%QL,F,this%e(idR)%nEqn)
+       CALL RiemannSolver(this%e(idL)%QR,this%e(idR)%QL,F,this%e(idR)%nEqn,N,max(this%e(idL)%lambdamax&
+            ,this%e(idR)%lambdamax))
        this%e(idR)%FstarL = -F
        this%e(idL)%FstarR = F
     END DO

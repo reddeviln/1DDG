@@ -59,16 +59,95 @@ CONTAINS
             &+this%e(i)%xL)*0.5_RP
        this%e(i)%Q(:,1)=2.0_RP+0.5_RP*sin(2.0_RP*pi*points(i,:))
        this%e(i)%Q(:,2)=this%e(i)%Q(:,1)
-       this%e(i)%Q(:,3)=this%e(i)%Q(:,1)*(1+1/((gamma-1.0_RP)*this&
-            &%e(i)%Q(:,1)))
+       this%e(i)%Q(:,3)=this%e(i)%Q(:,1)*0.5+1/(gamma-1)
        Qplot((i-1)*this%DG%N:i*this%DG%N)=this%e(i)%Q(:,1)
        pplot((i-1)*this%DG%N:i*this%DG%N)=points(i,:)
     END DO
-    OPEN(file='../Plots/initial.dat', unit=15)
-    CALL ExportToTecplot_1D(pplot,qplot,this%DG%N*this%K,15,"rho")
+    OPEN(file='../Plots/initial.curve', unit=15)
+    CALL ExportToTecplot_1D(pplot,qplot,this%DG%N*this%K,15,"#rho")
     CLOSE(15)
   END SUBROUTINE InitialCondition
+
+  !////////////////////////////////////////////////////////////////////
+
+  SUBROUTINE getLambdaMaxGlobally(this)
+    IMPLICIT NONE
+
+    TYPE(DGMesh) , INTENT(INOUT) :: this
+
+    !local variables
+
+    INTEGER                                        :: i
+    REAL(KIND=RP) , DIMENSION(this%K, 0:this%dg%N) :: p, c
+    REAL(KIND=RP) , DIMENSION(this%K)              :: maxatElement
+
+    DO i=1,this%K
+       p(i,:)=(gamma-1.0_RP)*(this%e(i)%Q(:,3)-0.5_RP*(this%e(i)%Q(:,2)**2)/this%e(i)%Q(:,1))
+    END DO
+
+    DO i=1,this%K
+       IF(any(gamma*p(i,:)/this%e(i)%Q(:,1)<=0)) THEN
+          print*,"pressure/density negativ in element ",i,minval(p(i,:)),minval(this%e(i)%Q(:,1))
+          CALL EXIT(1)
+       ELSE
+          c(i,:)=sqrt(gamma*p(i,:)/this%e(i)%Q(:,1))
+       END IF
+    END DO
     
+    DO i=1,this%K
+       maxatElement(i)=max(maxval(abs(this%e(i)%Q(:,2)/this&
+            &%e(i)%Q(:,1)+c(i,:))),maxval(abs(this%e(i)%Q(:,2)/this&
+            &%e(i)%Q(:,1)-c(i,:))))
+       this%e(i)%lambdamax=maxatElement(i)
+    END DO
+    this%lambdamax=maxval(maxatElement)
+  END SUBROUTINE getLambdaMaxGlobally
+
+  !/////////////////////////////////////////////////////
+
+  SUBROUTINE getRungeKuttaStep(this,t,deltaT)
+    IMPLICIT NONE
+
+    TYPE(DGMesh) , INTENT(INOUT)  :: this
+    REAL(KIND=RP), INTENT(IN)     :: t,deltaT
+
+    !local variables
+
+    INTEGER :: step, i
+    REAL(KIND=RP), DIMENSION(0:this%DG%N,this%e(1)%nEqn,this%K) :: buffer
+
+    CALL GlobalTimeDerivative(this,t)
+    DO i=1,this%K
+       buffer(:,:,i)=this%e(i)%Q_dot
+    END DO
+    DO step=1,5
+       CALL GlobalTimeDerivative(this,t+b(step)*deltat)
+       DO i=1,this%K
+          buffer(:,:,i)=a(step)*buffer(:,:,i)+this%e(i)%Q_dot
+       END DO
+       DO i=1,this%K
+          this%e(i)%Q=this%e(i)%Q+c(step)*deltat*buffer(:,:,i)
+       END DO
+    END DO
+  END SUBROUTINE getRungeKuttaStep
+  
+  SUBROUTINE preparePlot(this,fname,var)
+    IMPLICIT NONE
+    TYPE(DGMesh)     , INTENT(IN) :: this
+    CHARACTER(len=*) , INTENT(IN) :: fname
+    INTEGER          , INTENT(IN) :: var
+    !local variables
+    INTEGER :: i
+    REAL(KIND=RP),DIMENSION(0:this%DG%N*this%K) ::Qplot,pplot
+    DO i=1,this%K
+       Qplot((i-1)*this%DG%N:i*this%DG%N)=this%e(i)%Q(:,var)
+       pplot((i-1)*this%DG%N:i*this%DG%N)=points(i,:)
+    END DO
+
+    OPEN(file=fname, unit=15)
+    CALL ExportToTecplot_1D(pplot,Qplot,this%K*this%DG%N,15,"#var")
+    CLOSE(15)
+  END SUBROUTINE preparePlot
   
   
 END MODULE Timeintegration
